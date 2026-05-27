@@ -21,7 +21,7 @@ export const BottomNav: React.FC = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-6 py-2 bg-background/95 backdrop-blur-lg border-t border-border/40 flex items-center justify-around shadow-lg select-none">
+    <nav className="safe-bottom-nav fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-6 py-2 bg-background/95 backdrop-blur-lg border-t border-border/40 flex items-center justify-around shadow-lg select-none">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         // Check if active (Home matches home, detail, settings)

@@ -47,7 +47,7 @@ export const AppHeader: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between w-full px-4 py-3 bg-background/80 backdrop-blur-md border-b border-border/40 select-none">
+    <header className="safe-header sticky top-0 z-50 flex items-center justify-between w-full px-4 py-3 bg-background/80 backdrop-blur-md border-b border-border/40 select-none">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {isInnerScreen ? (
           <button
