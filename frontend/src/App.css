@@ -114,9 +114,7 @@
 
 /* Safe areas & Mobile Layout Containers */
 .safe-layout {
-  @apply max-w-md mx-auto min-h-screen bg-background relative flex flex-col;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  @apply max-w-md mx-auto min-h-screen pb-24 bg-background relative flex flex-col;
 }
 
 /* Header with safe area notch support */
