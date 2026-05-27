@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="100" fill="#16a34a"/>
+  <path d="M128 384V128l128-48 128 48v256l-128 48-128-48z" fill="white" opacity="0.15"/>
+  <path d="M160 352V160l96-36 96 36v192l-96 36-96-36z" fill="white" opacity="0.3"/>
+  <path d="M192 320V192l64-24 64 24v128l-64 24-64-24z" fill="white"/>
+  <text x="256" y="305" text-anchor="middle" fill="#16a34a" font-family="system-ui, sans-serif" font-weight="800" font-size="200">B</text>
+</svg>

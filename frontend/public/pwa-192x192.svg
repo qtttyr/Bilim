@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" fill="none">
+  <rect width="192" height="192" rx="40" fill="#16a34a"/>
+  <path d="M48 144V48l48-18 48 18v96l-48 18-48-18z" fill="white" opacity="0.15"/>
+  <path d="M60 132V60l36-13.5L132 60v72l-36 13.5L60 132z" fill="white" opacity="0.3"/>
+  <path d="M72 120V72l24-9 24 9v48l-24 9-24-9z" fill="white"/>
+  <text x="96" y="115" text-anchor="middle" fill="#16a34a" font-family="system-ui, sans-serif" font-weight="800" font-size="72">B</text>
+</svg>
