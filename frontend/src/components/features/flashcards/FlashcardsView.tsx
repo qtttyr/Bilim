@@ -228,7 +228,7 @@ export const FlashcardsView: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full font-sans justify-between relative min-h-[calc(100vh-60px)]">
+    <div className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full font-sans justify-between relative min-h-0 h-full">
       
       {/* 1. Header Toolbar */}
       <div className="flex justify-between items-center select-none py-1">
@@ -285,7 +285,7 @@ export const FlashcardsView: React.FC = () => {
           onClick={handleFlip}
           className="flex-1 flex items-center justify-center my-6 cursor-pointer select-none card-perspective"
         >
-          <div className={`w-full h-80 rounded-[2.5rem] relative card-inner ${isFlipped ? 'flipped' : ''}`}>
+          <div className={`w-full h-72 sm:h-80 rounded-[2.5rem] relative card-inner ${isFlipped ? 'flipped' : ''}`}>
             
             {/* FRONT FACE (Question) */}
             <div className="absolute inset-0 w-full h-full rounded-[2.5rem] bg-card border border-border/60 shadow-lg p-8 flex flex-col justify-between card-front select-none">

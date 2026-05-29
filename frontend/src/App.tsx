@@ -38,13 +38,15 @@ const MainAppContent: React.FC = () => {
     }
   };
 
+  const isImmersive = ['flashcards', 'quiz', 'boss'].includes(currentScreen);
+
   return (
-    <div className="safe-layout">
+    <div className={`safe-layout ${isImmersive ? '!pb-0 h-[100dvh] overflow-hidden' : ''}`}>
       {/* Header Toolbar */}
       <AppHeader />
       
       {/* Immersive Scrollable View Body */}
-      <main className="flex-grow flex flex-col pb-8">
+      <main className={`flex-grow flex flex-col ${isImmersive ? 'pb-0 overflow-hidden' : 'pb-8'}`}>
         {renderActiveScreen()}
       </main>
 

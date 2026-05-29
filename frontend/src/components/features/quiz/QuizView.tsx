@@ -180,7 +180,7 @@ export const QuizView: React.FC = () => {
   const q = questions[currentQIndex];
 
   return (
-    <div className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full font-sans justify-between relative min-h-[calc(100vh-60px)]">
+    <div className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full font-sans justify-between relative min-h-0 h-full">
       
       {/* 1. Progress Indicator */}
       <div className="w-full select-none">
@@ -204,15 +204,15 @@ export const QuizView: React.FC = () => {
 
       {/* 2. Question Text */}
       {q && (
-        <div className="flex-1 flex flex-col justify-center my-6 select-text">
-          <div className="p-5 rounded-3xl bg-card border border-border/40 shadow-sm">
+        <div className="flex-grow flex flex-col justify-start my-4 overflow-y-auto select-text min-h-0 pr-1 no-scrollbar space-y-4">
+          <div className="p-5 rounded-3xl bg-card border border-border/40 shadow-sm flex-shrink-0">
             <h3 className="font-heading font-extrabold text-base text-foreground leading-relaxed text-center">
               {q.question}
             </h3>
           </div>
 
           {/* Multiple choice Options */}
-          <div className="grid gap-3.5 mt-6 select-none">
+          <div className="grid gap-3 select-none flex-shrink-0">
             {q.options.map((opt, index) => {
               const isSelected = selectedOption === index;
               const isCorrect = q.correct === index;
@@ -263,7 +263,7 @@ export const QuizView: React.FC = () => {
 
           {/* 3. Real-time cognitive explanation */}
           {isAnswered && (
-            <div className="mt-6 p-4 rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/10 animate-fade-in">
+            <div className="p-4 rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/10 animate-fade-in flex-shrink-0">
               <div className="flex items-center gap-1.5 text-xs font-bold text-primary mb-1">
                 <SparklesIcon size={14} />
                 <span>Bilim Explanation</span>

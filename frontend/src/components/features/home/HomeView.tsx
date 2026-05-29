@@ -219,7 +219,7 @@ export const HomeView: React.FC = () => {
       {/* FLOATING ACTION BUTTON (FAB) */}
       <button
         onClick={() => navigateTo('upload')}
-        className="fixed bottom-20 right-6 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-2xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+        className="fixed bottom-28 right-6 md:right-[calc(50%-208px)] z-40 flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-2xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
         aria-label="Upload new material"
       >
         <PlusSignIcon size={24} strokeWidth={2.5} />

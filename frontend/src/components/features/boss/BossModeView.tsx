@@ -159,7 +159,7 @@ export const BossModeView: React.FC = () => {
   const remaining = weakCards.length - currentIndex;
 
   return (
-    <div className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full font-sans justify-between relative min-h-[calc(100vh-60px)] bg-background">
+    <div className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full font-sans justify-between relative min-h-0 h-full bg-background">
       
       {/* 1. Immersive Top Toolbar */}
       <div className="flex justify-between items-center select-none py-1.5 border-b border-border/30">
@@ -217,7 +217,7 @@ export const BossModeView: React.FC = () => {
           }}
           className="flex-1 flex items-center justify-center my-4 cursor-pointer select-none card-perspective"
         >
-          <div className={`w-full h-80 rounded-[2.5rem] relative card-inner ${isFlipped ? 'flipped' : ''}`}>
+          <div className={`w-full h-72 sm:h-80 rounded-[2.5rem] relative card-inner ${isFlipped ? 'flipped' : ''}`}>
             
             {/* FRONT (Rapid Question) */}
             <div className="absolute inset-0 w-full h-full rounded-[2.5rem] bg-card border border-rose-500/10 shadow-lg p-8 flex flex-col justify-between card-front select-none">
