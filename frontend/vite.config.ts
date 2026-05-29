@@ -11,7 +11,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "pwa-192x192.svg", "pwa-512x512.svg", "pwa-512x512-maskable.svg"],
+      includeAssets: ["app-icon.png", "favicon.svg", "pwa-192x192.svg", "pwa-512x512.svg", "pwa-512x512-maskable.svg"],
       manifest: {
         name: "Bilim — Smart Study Tool",
         short_name: "Bilim",
@@ -27,6 +27,17 @@ export default defineConfig({
         lang: "en",
         categories: ["education", "productivity"],
         icons: [
+          {
+            src: "app-icon.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: "app-icon.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable",
+          },
           {
             src: "pwa-192x192.svg",
             sizes: "192x192",
@@ -50,14 +61,14 @@ export default defineConfig({
             short_name: "Upload",
             description: "Upload new study material",
             url: "/?screen=upload",
-            icons: [{ src: "pwa-192x192.svg", sizes: "192x192" }],
+            icons: [{ src: "app-icon.png", sizes: "512x512" }],
           },
           {
             name: "Progress",
             short_name: "Progress",
             description: "View your study progress",
             url: "/?screen=progress",
-            icons: [{ src: "pwa-192x192.svg", sizes: "192x192" }],
+            icons: [{ src: "app-icon.png", sizes: "512x512" }],
           },
         ],
         screenshots: [],

@@ -1,73 +1,42 @@
-# React + TypeScript + Vite
+# <img src="public/app-icon.png" width="48" height="48" style="vertical-align: middle; border-radius: 12px; margin-right: 10px;" /> Bilim — Frontend (PWA Study Client)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This folder contains the frontend source code for **Bilim** — an AI-powered smart study tool using spaced repetition and active recall.
 
-Currently, two official plugins are available:
+<p align="center">
+  <img src="public/app-icon.png" width="128" height="128" style="border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Key Features (Frontend)
+- **Local Spaced Repetition (SM-2)**: Operates fully offline using `IndexedDB` to store cards, quizzes, history, and streaks.
+- **3D Flashcards**: Beautiful interactive CSS cards with math rendering support (via KaTeX).
+- **Boss Mode**: High-intensity review session with a 3-second timer and auto-flip mechanics for weak concepts.
+- **Progress Dashboard**: Custom SVG/CSS charts displaying weekly reviews and dynamic memory health metrics.
+- **Progressive Web App (PWA)**: Installable on iOS, Android, and Desktop, featuring offline support and assets caching via Service Worker.
+- **Double Themes**: Beautifully crafted Light and Dark modes.
 
-## React Compiler
+## 🛠 Tech Stack
+- **Framework**: React + Vite + TypeScript
+- **Styling**: Tailwind CSS v4, shadcn/ui
+- **Icons**: Custom Lucide-based Icon Set
+- **Database**: IndexedDB (`idb` wrapper)
+- **Mathematical Layout**: KaTeX
+- **PWA Tooling**: `vite-plugin-pwa`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 Running Locally
 
-## Expanding the ESLint configuration
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+3. Build the production app (incorporating PWA service worker):
+   ```bash
+   npm run build
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+For backend setup and core app architecture details, please refer to the [Root README.md](../README.md).
