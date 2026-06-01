@@ -87,7 +87,7 @@ export const UploadView: React.FC = () => {
     if (activeTab === 'file') {
       if (!selectedFile) return;
       title = selectedFile.name.replace(/\.[^/.]+$/, ""); // strip extension
-      content = `Simulated document content of ${selectedFile.name}. Quantum mechanics is a fundamental theory in physics that provides a description of the physical properties of nature at the scale of atoms and subatomic particles. It is the foundation of all quantum physics including quantum chemistry, quantum field theory, quantum technology, and quantum information science. Wave-particle duality, superposition, and quantum entanglement are major pillars. The Schrödinger equation governs the time evolution of physical systems.`;
+      content = '';
     } else if (activeTab === 'text') {
       if (pastedText.trim().length < 15) {
         alert('Please paste at least 15 characters of text.');
@@ -112,8 +112,8 @@ export const UploadView: React.FC = () => {
     setLoading(true);
 
     try {
-      // Trigger dynamic mock Gemini API
-      const material = await ingestMaterial(title, content, activeTab);
+      // Trigger Gemini API via backend ingestion
+      const material = await ingestMaterial(title, content, activeTab, selectedFile || undefined);
       
       // Save in IndexedDB
       await addMaterial(material);

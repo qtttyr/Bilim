@@ -390,6 +390,15 @@ export async function getMaterial(id: string): Promise<Material | undefined> {
 
 export async function addMaterial(material: Material): Promise<void> {
   const db = await getDB();
+
+  // Ensure the material has a valid id and createdAt (backend may not provide them)
+  if (!material.id) {
+    material.id = `mat_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+  }
+  if (!material.createdAt) {
+    material.createdAt = Date.now();
+  }
+
   const tx = db.transaction(['materials', 'card_state'], 'readwrite');
   await tx.objectStore('materials').put(material);
   

@@ -1,66 +1,139 @@
-# <img src="frontend/public/app-icon.png" width="48" height="48" style="vertical-align: middle; border-radius: 12px; margin-right: 10px;" /> Bilim — AI-Powered Smart Study Platform
-
-> **Bilim** (от тюрк. *«знание»*) — это инновационная PWA-платформа для умного обучения школьников и студентов. Она объединяет передовые возможности искусственного интеллекта и когнитивную психологию запоминания, чтобы превратить любой скучный материал в интерактивную систему тренировок.
+# Bilim — AI-Powered Smart Study Platform
 
 <p align="center">
-  <img src="frontend/public/app-icon.png" width="160" height="160" style="border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);" />
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white" />
 </p>
 
----
+**Bilim** (from Turkic *"knowledge"*) transforms any study material — PDFs, lecture notes, web articles, or plain text — into an interactive learning system powered by AI and spaced repetition. Upload once, and instantly get AI-generated summaries, flashcards, and quizzes tailored to your content.
 
-## 🌟 В чём суперсила Bilim?
-
-Обычно студентам приходится тратить часы на составление карточек (flashcards), конспектирование и самопроверку. **Bilim делает это за секунды:**
-
-1. **Загрузка любого источника** ── PDF-учебник, лекция в DOCX, веб-страница по ссылке или просто скопированный текст.
-2. **Мгновенный AI-анализ** ── За один запрос нейросеть **Gemini 3.0 Flash** выделяет ключевые концепты, генерирует краткое саммари, набор 3D-карточек для запоминания и интерактивный квиз.
-3. **Умная память (Spaced Repetition)** ── Встроенный локальный алгоритм **SM-2** отслеживает, насколько хорошо вы помните каждый факт, и автоматически напоминает о материале в идеальный момент перед тем, как вы его забудете.
+Built for students who want to study smarter, not longer.
 
 ---
 
-## 🚀 Основные Функции
+## Key Features
 
-### 🧠 Изучение и Карточки (Flashcards)
-* **3D-интерактивность**: Красивые карточки с эффектом трехмерного переворота.
-* **Математика и формулы**: Полная поддержка рендеринга сложных формул через KaTeX.
-* **Умный фидбек**: Оценка своего ответа тремя кнопками: *«Не помню»* (Missed), *«Неуверенно»* (Shaky), *«Знаю»* (Got it). Алгоритм мгновенно пересчитывает дату следующего показа.
-
-### 🔥 Режим Босса (Boss Mode)
-* Высокоинтенсивный тренинг для "горящих" дедлайнов.
-* Сфокусирован исключительно на ваших слабых местах (карточках с низким уровнем здоровья памяти).
-* Полноэкранный режим с обратным отсчётом времени (3 секунды на размышление) и автоматическим переворотом карты держит мозг в тонусе.
-
-### 📝 Интерактивные Квизы
-* Быстрые тесты из 5 вопросов по изученному материалу.
-* Мгновенная проверка ответов с цветовой индикацией (зеленый / красный).
-* Подробные AI-объяснения для каждого вопроса помогут понять суть, а не просто зазубрить.
-
-### 📊 Панель Прогресса и «Здоровье Памяти»
-* Наглядный мониторинг уровня владения материалом (Memory Health %).
-* Недельные графики активности, показывающие количество пройденных карточек и тестов.
-* **Игровой стрик (Streak)**: Огонек активности мотивирует учиться каждый день и не прерывать серию.
-
-### 📶 Полный Offline и Конфиденциальность
-* Приложение работает прямо в браузере или устанавливается на телефон/ПК как полноценное **PWA (Progressive Web App)**.
-* Все ваши данные, статистика, карточки и прогресс хранятся локально на вашем устройстве в **IndexedDB** и никуда не передаются.
+- **AI Study Generation** — Upload a PDF, paste text, or submit a URL. Gemini extracts key concepts, generates smart summaries, creates flashcards, and builds custom quizzes.
+- **3D Flashcards with Spaced Repetition** — Interactive card flip with KaTeX math rendering. Built-in SM-2 algorithm schedules reviews at optimal intervals for long-term retention.
+- **Boss Mode** — High-intensity review session targeting weak cards with a 3-second timer and auto-flip mechanics.
+- **Interactive Quizzes** — Timed, AI-generated quizzes with instant feedback, color-coded results, and detailed explanations.
+- **Progress Dashboard** — Track memory health, weekly activity charts, study streaks, and quiz scores.
+- **Offline-First PWA** — Fully installable on iOS, Android, and Desktop. All data stored locally in IndexedDB. No account required.
+- **Dark & Light Themes** — Beautifully crafted emerald-green design system with smooth animations.
 
 ---
 
-## 🛠 Технологический стек
+## Tech Stack
 
-| Слой | Технологии |
-| --- | --- |
-| **Frontend** | React, Vite, TypeScript, PWA |
-| **Стили & UI** | Tailwind CSS v4, shadcn/ui, плавные CSS-анимации |
-| **База Данных & Logic** | IndexedDB (библиотека `idb`), локальный алгоритм интервальных повторений SM-2 |
-| **Backend API** | FastAPI (Python), PyMuPDF (парсинг документов), BeautifulSoup4 (веб-скрапинг) |
-| **Искусственный Интеллект** | Gemini 3.0 Flash API (генерация структурированного JSON) |
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, TypeScript, Vite 8 |
+| **Styling** | Tailwind CSS v4, shadcn/ui |
+| **State & Storage** | IndexedDB (`idb`), localStorage |
+| **PWA** | `vite-plugin-pwa`, Service Worker, Workbox |
+| **Math Rendering** | KaTeX |
+| **Backend** | FastAPI (Python 3.13) |
+| **AI** | Google Gemini API |
+| **Document Parsing** | PyMuPDF, python-docx, BeautifulSoup4 |
 
 ---
 
-## 🎨 Дизайн и Эстетика
+## Getting Started LOCALLY
 
-В Bilim особое внимание уделено визуальному удовольствию и эргономике:
-* **Адаптивность**: Интерфейс спроектирован по принципу Mobile-First — идеально лежит в руке на любом смартфоне.
-* **Две темы**: Быстрое переключение между комфортным темным (Dark Mode) и чистым светлым (Light Mode) режимами.
-* **Микроанимации**: Плавные переходы, пульсация загрузки, летящие карточки и огонек стрика делают процесс живым.
+### Prerequisites
+
+- **Node.js** >= 18
+- **Python** >= 3.12
+- Google Gemini API key ([get one free](https://aistudio.google.com/apikey))
+
+### 1. Clone & Install Frontend
+
+```bash
+cd frontend
+npm install
+```
+
+### 2. Set Up Backend
+
+```bash
+cd backend
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Edit `backend/.env` and add your Gemini API key:
+
+```env
+GEMINI_API_KEY=your_key_here
+```
+
+### 4. Run
+
+**Terminal 1 — Backend:**
+
+```bash
+cd backend
+venv\Scripts\activate     # or source venv/bin/activate
+uvicorn app.main:app --reload --port 8000
+```
+
+**Terminal 2 — Frontend:**
+
+```bash
+cd frontend
+npm run dev
+```
+
+Open `http://localhost:5173` in your browser. The app works as a PWA — install it to your home screen for the native experience.
+
+### Production Build
+
+```bash
+cd frontend
+npm run build
+npm run preview
+```
+
+---
+
+## Project Structure
+
+```
+├── frontend/              # React + Vite PWA client
+│   ├── src/
+│   │   ├── components/    # UI components and feature views
+│   │   ├── context/       # App state management
+│   │   ├── db/            # IndexedDB operations
+│   │   ├── services/      # API client
+│   │   └── types/         # TypeScript types
+│   └── public/            # Static assets and PWA icons
+│
+├── backend/               # FastAPI server
+│   ├── app/
+│   │   ├── main.py         # API routes
+│   │   ├── config.py       # Environment config
+│   │   └── services/       # Gemini, parser, scraper
+│   ├── requirements.txt
+│   └── .env.example
+```
+
+---
+
+Built with ❤️ for the hackathon.
