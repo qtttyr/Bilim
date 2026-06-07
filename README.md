@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white" />
 </p>
 
-**Bilim** (from Turkic *"knowledge"*) transforms any study material — PDFs, lecture notes, web articles, or plain text — into an interactive learning system powered by AI and spaced repetition. Upload once, and instantly get AI-generated summaries, flashcards, and quizzes tailored to your content.
+**Bilim** (from Kazakh *"knowledge"*) transforms any study material — PDFs, lecture notes, web articles, or plain text — into an interactive learning system powered by AI and spaced repetition. Upload once, and instantly get AI-generated summaries, flashcards, and quizzes tailored to your content.
 
 Built for students who want to study smarter, not longer.
 
