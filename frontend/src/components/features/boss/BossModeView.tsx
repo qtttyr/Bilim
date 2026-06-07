@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../../context/AppContext';
 import { getCardStates, updateCardDifficulty, incrementBossSessions } from '../../../db/db';
 import { CardState, Flashcard } from '../../../types';
-import { MathRenderer } from '../../ui/MathRenderer';
+import { MathRenderer, MixedTextRenderer } from '../../ui/MathRenderer';
 import { 
   Tick01Icon, 
   Cancel01Icon, 
@@ -229,8 +229,8 @@ export const BossModeView: React.FC = () => {
               </div>
               
               <div className="flex-1 flex items-center justify-center text-center my-4 overflow-y-auto">
-                <h3 className="font-heading font-extrabold text-base text-foreground leading-relaxed">
-                  {weakCards[currentIndex].front}
+                <h3 className="font-heading font-extrabold text-base text-foreground leading-relaxed px-2">
+                  <MixedTextRenderer text={weakCards[currentIndex].front} />
                 </h3>
               </div>
 
@@ -246,19 +246,8 @@ export const BossModeView: React.FC = () => {
                 <span className="text-orange-500">Boss Mode</span>
               </div>
               
-              <div className="flex-1 flex flex-col justify-center my-4 overflow-y-auto pr-1 no-scrollbar text-center">
-                {/* Mixed LaTeX parsing */}
-                <div className="space-y-2 leading-relaxed text-sm select-text text-center">
-                  {weakCards[currentIndex].back.split(/(\$\$.*?\$\$|\$.*?\$)/g).map((part, index) => {
-                    if (part.startsWith('$$') && part.endsWith('$$')) {
-                      return <MathRenderer key={index} formula={part.slice(2, -2)} displayMode={true} />;
-                    } else if (part.startsWith('$') && part.endsWith('$')) {
-                      return <MathRenderer key={index} formula={part.slice(1, -1)} displayMode={false} className="inline-block py-0 my-0" />;
-                    } else {
-                      return <span key={index} className="whitespace-pre-line">{part}</span>;
-                    }
-                  })}
-                </div>
+              <div className="flex-1 flex flex-col justify-center my-4 overflow-y-auto pr-1 no-scrollbar text-center select-text">
+                <MixedTextRenderer text={weakCards[currentIndex].back} />
               </div>
 
               <div className="text-center text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">

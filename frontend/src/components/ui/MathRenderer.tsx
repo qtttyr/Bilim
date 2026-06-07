@@ -13,7 +13,8 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
   displayMode = false,
   className = '' 
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Use generic HTMLElement reference to support both div and span tags dynamically
+  const containerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -31,10 +32,54 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
     }
   }, [formula, displayMode]);
 
+  if (displayMode) {
+    return (
+      <div 
+        ref={containerRef as React.RefObject<HTMLDivElement>} 
+        className={`math-wrapper ${className}`}
+      />
+    );
+  }
+
   return (
-    <div 
-      ref={containerRef} 
-      className={`math-wrapper ${className}`}
+    <span 
+      ref={containerRef as React.RefObject<HTMLSpanElement>} 
+      className={`inline-math-container ${className}`}
     />
+  );
+};
+
+interface MixedTextRendererProps {
+  text: string;
+  className?: string;
+}
+
+export const MixedTextRenderer: React.FC<MixedTextRendererProps> = ({ 
+  text, 
+  className = '' 
+}) => {
+  if (!text) return null;
+
+  // Split by $$formula$$ or $formula$
+  const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
+
+  return (
+    <span className={className}>
+      {parts.map((part, index) => {
+        if (part.startsWith('$$') && part.endsWith('$$')) {
+          const formula = part.slice(2, -2);
+          return <MathRenderer key={index} formula={formula} displayMode={true} />;
+        } else if (part.startsWith('$') && part.endsWith('$')) {
+          const formula = part.slice(1, -1);
+          return <MathRenderer key={index} formula={formula} displayMode={false} />;
+        } else {
+          return (
+            <span key={index} className="whitespace-pre-line">
+              {part}
+            </span>
+          );
+        }
+      })}
+    </span>
   );
 };

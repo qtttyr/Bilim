@@ -10,6 +10,7 @@ import { QuizView } from './components/features/quiz/QuizView';
 import { BossModeView } from './components/features/boss/BossModeView';
 import { ProgressView } from './components/features/progress/ProgressView';
 import { SettingsView } from './components/features/settings/SettingsView';
+import { CardEditorView } from './components/features/flashcards/CardEditorView';
 import './App.css';
 
 const MainAppContent: React.FC = () => {
@@ -33,12 +34,14 @@ const MainAppContent: React.FC = () => {
         return <QuizView />;
       case 'boss':
         return <BossModeView />;
+      case 'card-editor':
+        return <CardEditorView />;
       default:
         return <HomeView />;
     }
   };
 
-  const isImmersive = ['flashcards', 'quiz', 'boss'].includes(currentScreen);
+  const isImmersive = ['flashcards', 'quiz', 'boss', 'card-editor'].includes(currentScreen);
 
   return (
     <div className={`safe-layout ${isImmersive ? '!pb-0 h-[100dvh] overflow-hidden' : ''}`}>

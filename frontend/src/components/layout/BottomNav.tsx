@@ -10,7 +10,7 @@ export const BottomNav: React.FC = () => {
   const { currentScreen, navigateTo } = useApp();
 
   // Distraction-free: Hide bottom nav on immersive study screens
-  const hideNav = ['flashcards', 'quiz', 'boss'].includes(currentScreen);
+  const hideNav = ['flashcards', 'quiz', 'boss', 'card-editor'].includes(currentScreen);
 
   if (hideNav) return null;
 

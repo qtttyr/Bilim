@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../../context/AppContext';
-import { getCardStates, updateCardDifficulty, saveManualCard } from '../../../db/db';
+import { getCardStates, updateCardDifficulty } from '../../../db/db';
 import { CardState, Flashcard } from '../../../types';
-import { MathRenderer } from '../../ui/MathRenderer';
+import { MathRenderer, MixedTextRenderer } from '../../ui/MathRenderer';
 import { 
   ShuffleIcon, 
   Edit01Icon, 
-  PlusSignIcon, 
-  Task01Icon, 
   Tick01Icon, 
   Cancel01Icon, 
   ArrowRight01Icon,
@@ -16,7 +14,7 @@ import {
 } from '@/components/ui/icons';
 
 export const FlashcardsView: React.FC = () => {
-  const { activeMaterial, navigateTo, goBack, refreshMaterials } = useApp();
+  const { activeMaterial, navigateTo, refreshMaterials } = useApp();
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [cardStates, setCardStates] = useState<Record<string, CardState>>({});
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -29,19 +27,28 @@ export const FlashcardsView: React.FC = () => {
   const [sessionShaky, setSessionShaky] = useState<number>(0);
   const [sessionMissed, setSessionMissed] = useState<number>(0);
 
-  // Edit/Add Modal states
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
-  const [modalFront, setModalFront] = useState<string>('');
-  const [modalBack, setModalBack] = useState<string>('');
-  const [modalConceptId, setModalConceptId] = useState<string>('');
-  const [modalHasFormula, setModalHasFormula] = useState<boolean>(false);
+  // Touch and Mouse Swipe States
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'down' | null>(null);
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [animateOutDirection, setAnimateOutDirection] = useState<'left' | 'right' | 'down' | null>(null);
 
   if (!activeMaterial) return null;
 
   useEffect(() => {
     loadCards();
   }, [activeMaterial, isShuffle]);
+
+  // Reset drag position on card index change
+  useEffect(() => {
+    setDragOffset({ x: 0, y: 0 });
+    setIsDragging(false);
+    setSwipeDirection(null);
+    setIsAnimatingOut(false);
+    setAnimateOutDirection(null);
+  }, [currentIndex]);
 
   const loadCards = async () => {
     try {
@@ -59,7 +66,6 @@ export const FlashcardsView: React.FC = () => {
         return !state || state.nextReview <= now;
       });
 
-      // If we have due cards, prioritize them! Otherwise, show all.
       const cardsToUse = dueCards.length > 0 ? dueCards : materialCards;
 
       if (isShuffle) {
@@ -96,80 +102,189 @@ export const FlashcardsView: React.FC = () => {
     else if (response === 'shaky') setSessionShaky(prev => prev + 1);
     else setSessionMissed(prev => prev + 1);
 
-    // Smooth transition: flip back first, then change index
+    // Smooth transition
     setIsFlipped(false);
+    // Slight timeout so the card flips back before moving to the next
     setTimeout(() => {
       setCurrentIndex(prev => prev + 1);
-    }, 250);
+    }, 150);
   };
 
-  // Mixed LaTeX parsing and rendering engine!
-  const renderMixedLaTeX = (text: string) => {
-    if (!text) return null;
-    
-    // Regular expression to match display $$formula$$ or inline $formula$
-    const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/g);
-    
+  // ----------------------------------------------------
+  // GESTURE HANDLERS (MOUSE & TOUCH)
+  // ----------------------------------------------------
+  const handleDragStart = (clientX: number, clientY: number) => {
+    if (isAnimatingOut || cards.length === 0) return;
+    setIsDragging(true);
+    setDragStart({ x: clientX, y: clientY });
+  };
+
+  const handleDragMove = (clientX: number, clientY: number) => {
+    if (!isDragging || isAnimatingOut) return;
+    const dx = clientX - dragStart.x;
+    const dy = clientY - dragStart.y;
+    setDragOffset({ x: dx, y: dy });
+
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    const threshold = 50; // drag distance in px to trigger active selection overlay
+
+    if (absX > absY && absX > threshold) {
+      setSwipeDirection(dx > 0 ? 'right' : 'left');
+    } else if (dy > absX && dy > threshold) {
+      setSwipeDirection('down');
+    } else {
+      setSwipeDirection(null);
+    }
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging || isAnimatingOut) return;
+    setIsDragging(false);
+
+    const absX = Math.abs(dragOffset.x);
+    const absY = Math.abs(dragOffset.y);
+    const threshold = 100; // swipe activation distance (100px)
+
+    // Tap detection: very small drag offset is treated as a tap to flip
+    if (absX < 8 && absY < 8) {
+      handleFlip();
+      setDragOffset({ x: 0, y: 0 });
+      setSwipeDirection(null);
+      return;
+    }
+
+    if (absX > absY && absX > threshold) {
+      // Horizontal swipe
+      triggerSwipeAction(dragOffset.x > 0 ? 'right' : 'left');
+    } else if (dragOffset.y > absX && dragOffset.y > threshold) {
+      // Vertical swipe down
+      triggerSwipeAction('down');
+    } else {
+      // Snap back to center
+      setDragOffset({ x: 0, y: 0 });
+      setSwipeDirection(null);
+    }
+  };
+
+  const triggerSwipeAction = (dir: 'left' | 'right' | 'down') => {
+    setIsAnimatingOut(true);
+    setAnimateOutDirection(dir);
+
+    // Push card out of viewport
+    if (dir === 'right') {
+      setDragOffset({ x: 500, y: dragOffset.y });
+    } else if (dir === 'left') {
+      setDragOffset({ x: -500, y: dragOffset.y });
+    } else if (dir === 'down') {
+      setDragOffset({ x: dragOffset.x, y: 500 });
+    }
+
+    // Process SM-2 review after animate-out finishes
+    setTimeout(() => {
+      if (dir === 'right') {
+        handleReview('known');
+      } else if (dir === 'left') {
+        handleReview('missed');
+      } else if (dir === 'down') {
+        handleReview('shaky');
+      }
+    }, 200);
+  };
+
+  // Bridge event listeners to generic handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    handleDragStart(e.clientX, e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    handleDragMove(e.clientX, e.clientY);
+  };
+
+  const handleMouseUp = () => {
+    handleDragEnd();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    handleDragEnd();
+  };
+
+  // Compute card drag style transform
+  const getCardSwipeStyle = () => {
+    if (isDragging) {
+      return {
+        transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${dragOffset.x * 0.05}deg)`,
+        transition: 'none',
+      };
+    }
+    if (isAnimatingOut) {
+      return {
+        transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${dragOffset.x * 0.08}deg)`,
+        opacity: 0,
+        transition: 'transform 0.25s ease-out, opacity 0.25s ease-out',
+      };
+    }
+    // Snap back
+    return {
+      transform: 'translate3d(0, 0, 0) rotate(0deg)',
+      transition: 'transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.2) , opacity 0.3s ease',
+    };
+  };
+
+  // Render visual indicator overlay as card is being dragged
+  const renderSwipeOverlay = () => {
+    if (!swipeDirection) return null;
+
+    // Calculate overlay opacity based on drag distance
+    const opacity = swipeDirection === 'right' || swipeDirection === 'left'
+      ? Math.min(0.9, Math.max(0, (Math.abs(dragOffset.x) - 15) / 80))
+      : Math.min(0.9, Math.max(0, (Math.abs(dragOffset.y) - 15) / 80));
+
+    if (opacity === 0) return null;
+
     return (
-      <div className="space-y-2 leading-relaxed text-sm select-text">
-        {parts.map((part, index) => {
-          if (part.startsWith('$$') && part.endsWith('$$')) {
-            const formula = part.slice(2, -2);
-            return <MathRenderer key={index} formula={formula} displayMode={true} />;
-          } else if (part.startsWith('$') && part.endsWith('$')) {
-            const formula = part.slice(1, -1);
-            return <MathRenderer key={index} formula={formula} displayMode={false} className="inline-block py-0 my-0" />;
-          } else {
-            return (
-              <span key={index} className="whitespace-pre-line">
-                {part}
-              </span>
-            );
-          }
-        })}
+      <div 
+        className="absolute inset-0 rounded-[2.5rem] flex items-center justify-center z-30 pointer-events-none transition-all duration-150 select-none"
+        style={{ 
+          opacity,
+          backgroundColor: 
+            swipeDirection === 'right' ? 'rgba(16, 185, 129, 0.12)' : 
+            swipeDirection === 'left' ? 'rgba(239, 68, 68, 0.12)' : 
+            'rgba(245, 158, 11, 0.12)'
+        }}
+      >
+        {swipeDirection === 'right' && (
+          <div className="bg-card/95 dark:bg-card/90 border border-emerald-500/35 px-4 py-2 rounded-2xl flex items-center gap-2 shadow-md scale-105 transition-transform duration-200">
+            <Tick01Icon className="text-emerald-500" size={16} strokeWidth={2.5} />
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Got It</span>
+          </div>
+        )}
+        {swipeDirection === 'left' && (
+          <div className="bg-card/95 dark:bg-card/90 border border-rose-500/35 px-4 py-2 rounded-2xl flex items-center gap-2 shadow-md scale-105 transition-transform duration-200">
+            <Cancel01Icon className="text-rose-500" size={16} strokeWidth={2.5} />
+            <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">Missed</span>
+          </div>
+        )}
+        {swipeDirection === 'down' && (
+          <div className="bg-card/95 dark:bg-card/90 border border-amber-500/35 px-4 py-2 rounded-2xl flex items-center gap-2 shadow-md scale-105 transition-transform duration-200">
+            <ArrowRight01Icon className="text-amber-500 rotate-90" size={16} strokeWidth={2.5} />
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">Shaky</span>
+          </div>
+        )}
       </div>
     );
-  };
-
-  // Modal actions
-  const openAddModal = () => {
-    setModalMode('add');
-    setModalFront('');
-    setModalBack('');
-    setModalConceptId(activeMaterial.concepts[0]?.id || 'c_custom');
-    setModalHasFormula(false);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = () => {
-    if (cards.length === 0) return;
-    const currentCard = cards[currentIndex];
-    setModalMode('edit');
-    setModalFront(currentCard.front);
-    setModalBack(currentCard.back);
-    setModalConceptId(currentCard.concept_id);
-    setModalHasFormula(currentCard.back.includes('$') || currentCard.back.includes('$$'));
-    setIsModalOpen(true);
-  };
-
-  const handleModalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!modalFront.trim() || !modalBack.trim()) return;
-
-    const currentCardId = modalMode === 'edit' ? cards[currentIndex].id : `fc_${Date.now()}`;
-    const newCard: Flashcard = {
-      id: currentCardId,
-      front: modalFront,
-      back: modalBack,
-      concept_id: modalConceptId,
-      difficulty: modalMode === 'edit' ? cards[currentIndex].difficulty : null
-    };
-
-    await saveManualCard(activeMaterial.id, newCard);
-    await refreshMaterials();
-    
-    setIsModalOpen(false);
-    loadCards(); // Reload cards list
   };
 
   // Complete Screen
@@ -187,7 +302,7 @@ export const FlashcardsView: React.FC = () => {
           Excellent effort. Spaced repetition engine updated your memory cycles.
         </p>
 
-        {/* Dynamic Stats Grid */}
+        {/* Stats Summary Grid */}
         <div className="grid grid-cols-3 gap-3 w-full max-w-[320px] mb-8">
           <div className="p-3.5 rounded-2xl bg-card border border-border/40 text-center shadow-sm">
             <span className="block text-2xl font-black text-emerald-600 dark:text-emerald-400">{sessionGotIt}</span>
@@ -230,10 +345,9 @@ export const FlashcardsView: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full font-sans justify-between relative min-h-0 h-full">
       
-      {/* 1. Header Toolbar */}
+      {/* 1. Header Toolbar (Shuffle / Edit buttons only) */}
       <div className="flex justify-between items-center select-none py-1">
         <div className="flex items-center gap-1.5">
-          {/* Progress badge */}
           <span className="text-xs font-bold px-3 py-1 bg-muted rounded-full text-foreground/80">
             {cards.length > 0 ? currentIndex + 1 : 0} / {cards.length}
           </span>
@@ -243,96 +357,108 @@ export const FlashcardsView: React.FC = () => {
           {/* Shuffle Button */}
           <button
             onClick={() => setIsShuffle(!isShuffle)}
-            className={`p-2 rounded-xl border border-border/40 transition-all cursor-pointer ${isShuffle ? 'bg-primary/10 text-primary border-primary/20' : 'bg-card text-muted-foreground'}`}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-border/40 transition-all cursor-pointer text-xs font-bold ${
+              isShuffle 
+                ? 'bg-primary/10 text-primary border-primary/20' 
+                : 'bg-card text-muted-foreground hover:text-foreground hover:border-border'
+            }`}
             title="Toggle Shuffle"
           >
-            <ShuffleIcon size={18} />
+            <ShuffleIcon size={14} />
+            <span>Shuffle</span>
           </button>
 
-          {/* Edit current card */}
-          {cards.length > 0 && (
-            <button
-              onClick={openEditModal}
-              className="p-2 rounded-xl bg-card border border-border/40 text-muted-foreground hover:text-foreground hover:border-border transition-all cursor-pointer"
-              title="Edit Card"
-            >
-              <Edit01Icon size={18} />
-            </button>
-          )}
-
-          {/* Add custom card */}
+          {/* Edit Cards (Navigate to separate Full Screen Editor) */}
           <button
-            onClick={openAddModal}
-            className="p-2 rounded-xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer"
-            title="Add Card"
+            onClick={() => navigateTo('card-editor')}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-card border border-border/40 text-muted-foreground hover:text-foreground hover:border-border transition-all cursor-pointer text-xs font-bold"
+            title="Manage Cards"
           >
-            <PlusSignIcon size={18} />
+            <Edit01Icon size={14} />
+            <span>Edit</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Immersion CSS 3D Flipping Card Section */}
+      {/* 2. Interactive Drag & Swipe Card Section */}
       {cards.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center p-6 my-auto select-none">
           <BookOpen01Icon size={40} className="text-muted-foreground/60 mb-4" />
           <h4 className="font-heading font-bold text-base mb-1">No cards available</h4>
           <p className="text-xs text-muted-foreground max-w-[200px] mb-4">
-            Try adding a custom flashcard using the "+" button in the top toolbar!
+            Try adding a custom flashcard using the "Edit" button to open the manager!
           </p>
         </div>
       ) : (
         <div 
-          onClick={handleFlip}
-          className="flex-1 flex items-center justify-center my-6 cursor-pointer select-none card-perspective"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="flex-1 flex items-center justify-center my-6 cursor-grab active:cursor-grabbing select-none card-perspective touch-none"
         >
-          <div className={`w-full h-72 sm:h-80 rounded-[2.5rem] relative card-inner ${isFlipped ? 'flipped' : ''}`}>
-            
-            {/* FRONT FACE (Question) */}
-            <div className="absolute inset-0 w-full h-full rounded-[2.5rem] bg-card border border-border/60 shadow-lg p-8 flex flex-col justify-between card-front select-none">
-              <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
-                <span>Front Side</span>
-                <span className="inline-flex items-center gap-1 text-primary">
-                  <SparklesIcon size={10} /> Active recall
-                </span>
-              </div>
+          {/* Swipe offset element (captures positioning) */}
+          <div 
+            className="w-full h-72 sm:h-80 relative"
+            style={getCardSwipeStyle()}
+          >
+            {/* Flip action element */}
+            <div className={`w-full h-full rounded-[2.5rem] relative card-inner ${isFlipped ? 'flipped' : ''}`}>
               
-              <div className="flex-1 flex items-center justify-center text-center my-4 overflow-y-auto">
-                <h3 className="font-heading font-extrabold text-lg text-foreground px-2 leading-relaxed">
-                  {cards[currentIndex].front}
-                </h3>
+              {/* FRONT FACE (Question + LaTeX Math support) */}
+              <div className="absolute inset-0 w-full h-full rounded-[2.5rem] bg-card border border-border/60 shadow-lg p-8 flex flex-col justify-between card-front overflow-hidden select-none">
+                {renderSwipeOverlay()}
+                
+                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
+                  <span>Front Side</span>
+                  <span className="inline-flex items-center gap-1 text-primary">
+                    <SparklesIcon size={10} /> Active recall
+                  </span>
+                </div>
+                
+                <div className="flex-1 flex items-center justify-center text-center my-4 overflow-y-auto pr-1 no-scrollbar select-text">
+                  <h3 className="font-heading font-extrabold text-lg text-foreground px-2 leading-relaxed">
+                    <MixedTextRenderer text={cards[currentIndex].front} />
+                  </h3>
+                </div>
+
+                <div className="text-center text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Tap to flip · Drag to review
+                </div>
               </div>
 
-              <div className="text-center text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                Tap to flip answer
+              {/* BACK FACE (Answer + KaTeX Math) */}
+              <div className="absolute inset-0 w-full h-full rounded-[2.5rem] bg-card border border-border/60 shadow-lg p-8 flex flex-col justify-between card-back overflow-hidden select-none">
+                {renderSwipeOverlay()}
+                
+                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
+                  <span>Back Side</span>
+                  <span className="text-emerald-500">Explanation</span>
+                </div>
+                
+                <div className="flex-1 flex flex-col justify-center my-4 overflow-y-auto pr-1 no-scrollbar text-center select-text">
+                  <MixedTextRenderer text={cards[currentIndex].back} />
+                </div>
+
+                <div className="text-center text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Tap to flip · Drag to review
+                </div>
               </div>
+
             </div>
-
-            {/* BACK FACE (Answer + KaTeX Math) */}
-            <div className="absolute inset-0 w-full h-full rounded-[2.5rem] bg-card border border-border/60 shadow-lg p-8 flex flex-col justify-between card-back select-none">
-              <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
-                <span>Back Side</span>
-                <span className="text-emerald-500">Explanation</span>
-              </div>
-              
-              <div className="flex-1 flex flex-col justify-center my-4 overflow-y-auto pr-1 no-scrollbar text-center">
-                {renderMixedLaTeX(cards[currentIndex].back)}
-              </div>
-
-              <div className="text-center text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                Tap card to flip back
-              </div>
-            </div>
-
           </div>
         </div>
       )}
 
-      {/* 3. Spaced Repetition Response Controls */}
+      {/* 3. Spaced Repetition Response Controls (Sleek backup buttons) */}
       {cards.length > 0 && (
         <div className={`grid grid-cols-3 gap-2 transition-all duration-300 select-none ${isFlipped ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4 pointer-events-none'}`}>
           <button
-            onClick={() => handleReview('missed')}
-            className="flex flex-col items-center justify-center py-3.5 bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20 rounded-2xl text-rose-600 dark:text-rose-400 font-bold transition-all cursor-pointer group"
+            onClick={() => triggerSwipeAction('left')}
+            className="flex flex-col items-center justify-center py-3 bg-rose-500/10 hover:bg-rose-500/15 border border-rose-500/20 rounded-2xl text-rose-600 dark:text-rose-400 font-bold transition-all cursor-pointer group"
           >
             <Cancel01Icon size={18} className="mb-0.5 group-hover:scale-110 transition-transform" />
             <span className="text-[10px] uppercase font-bold">Missed</span>
@@ -340,89 +466,22 @@ export const FlashcardsView: React.FC = () => {
           </button>
           
           <button
-            onClick={() => handleReview('shaky')}
-            className="flex flex-col items-center justify-center py-3.5 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 rounded-2xl text-amber-600 dark:text-amber-400 font-bold transition-all cursor-pointer group"
+            onClick={() => triggerSwipeAction('down')}
+            className="flex flex-col items-center justify-center py-3 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 rounded-2xl text-amber-600 dark:text-amber-400 font-bold transition-all cursor-pointer group"
           >
-            <ArrowRight01Icon size={18} className="mb-0.5 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight01Icon size={18} className="mb-0.5 group-hover:translate-x-0.5 transition-transform rotate-90" />
             <span className="text-[10px] uppercase font-bold">Shaky</span>
             <span className="text-[8px] font-medium text-amber-500/80">1 day</span>
           </button>
 
           <button
-            onClick={() => handleReview('known')}
-            className="flex flex-col items-center justify-center py-3.5 bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 rounded-2xl text-emerald-600 dark:text-emerald-400 font-bold transition-all cursor-pointer group"
+            onClick={() => triggerSwipeAction('right')}
+            className="flex flex-col items-center justify-center py-3 bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 rounded-2xl text-emerald-600 dark:text-emerald-400 font-bold transition-all cursor-pointer group"
           >
             <Tick01Icon size={18} className="mb-0.5 group-hover:scale-110 transition-transform" />
             <span className="text-[10px] uppercase font-bold">Got it</span>
             <span className="text-[8px] font-medium text-emerald-500/80">3 days</span>
           </button>
-        </div>
-      )}
-
-      {/* 4. IMMERSIVE FLASHCARD EDIT / ADD MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md select-none font-sans">
-          <div className="w-full max-w-sm rounded-[2rem] bg-card border border-border shadow-2xl p-6 relative">
-            <h3 className="font-heading font-extrabold text-lg text-foreground mb-4">
-              {modalMode === 'add' ? 'Add Custom Card' : 'Edit Flashcard'}
-            </h3>
-
-            <form onSubmit={handleModalSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-extrabold uppercase text-muted-foreground">Front Side (Question)</label>
-                <textarea
-                  value={modalFront}
-                  onChange={(e) => setModalFront(e.target.value)}
-                  placeholder="e.g. What is the formula for Force?"
-                  rows={2}
-                  className="w-full px-3.5 py-2.5 rounded-2xl border border-border bg-muted/30 focus:outline-none focus:border-primary text-xs"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-extrabold uppercase text-muted-foreground">Back Side (Answer)</label>
-                <textarea
-                  value={modalBack}
-                  onChange={(e) => setModalBack(e.target.value)}
-                  placeholder="e.g. Force is F = ma. Use $F = ma$ for inline math or $$F = ma$$ for centered math."
-                  rows={3}
-                  className="w-full px-3.5 py-2.5 rounded-2xl border border-border bg-muted/30 focus:outline-none focus:border-primary text-xs"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-extrabold uppercase text-muted-foreground">Link to Concept</label>
-                <select
-                  value={modalConceptId}
-                  onChange={(e) => setModalConceptId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-2xl border border-border bg-card text-foreground focus:outline-none focus:border-primary text-xs"
-                >
-                  {activeMaterial.concepts.map(c => (
-                    <option key={c.id} value={c.id}>{c.term}</option>
-                  ))}
-                  <option value="c_custom">General Concept</option>
-                </select>
-              </div>
-
-              <div className="flex gap-2.5 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3 bg-muted text-foreground font-bold rounded-2xl text-xs hover:bg-muted/80 transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-primary text-primary-foreground font-bold rounded-2xl text-xs hover:scale-105 transition-all cursor-pointer"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
 

@@ -543,6 +543,25 @@ export async function saveManualCard(
   await tx.done;
 }
 
+// Delete a custom flashcard
+export async function deleteManualCard(
+  materialId: string,
+  cardId: string
+): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction(['materials', 'card_state'], 'readwrite');
+  
+  const material = await tx.objectStore('materials').get(materialId);
+  if (material) {
+    material.flashcards = material.flashcards.filter(f => f.id !== cardId);
+    await tx.objectStore('materials').put(material);
+    
+    // Also clean up card state
+    await tx.objectStore('card_state').delete(cardId);
+  }
+  await tx.done;
+}
+
 // ----------------------------------------------------
 // QUIZ PROGRESS & INTEGRATION
 // ----------------------------------------------------

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../../context/AppContext';
 import { saveQuizResult } from '../../../db/db';
 import { QuizQuestion } from '../../../types';
+import { MixedTextRenderer } from '../../ui/MathRenderer';
 import { 
   Tick01Icon, 
   Cancel01Icon, 
@@ -206,8 +207,8 @@ export const QuizView: React.FC = () => {
       {q && (
         <div className="flex-grow flex flex-col justify-start my-4 overflow-y-auto select-text min-h-0 pr-1 no-scrollbar space-y-4">
           <div className="p-5 rounded-3xl bg-card border border-border/40 shadow-sm flex-shrink-0">
-            <h3 className="font-heading font-extrabold text-base text-foreground leading-relaxed text-center">
-              {q.question}
+            <h3 className="font-heading font-extrabold text-base text-foreground leading-relaxed text-center w-full">
+              <MixedTextRenderer text={q.question} />
             </h3>
           </div>
 
@@ -246,7 +247,9 @@ export const QuizView: React.FC = () => {
                     <span className={`w-7 h-7 rounded-xl text-xs font-black flex items-center justify-center transition-all ${letterStyle}`}>
                       {getOptionLetter(index)}
                     </span>
-                    <span className="leading-snug text-foreground/90 font-medium">{opt}</span>
+                    <span className="leading-snug text-foreground/90 font-medium flex-1">
+                      <MixedTextRenderer text={opt} />
+                    </span>
                   </div>
 
                   {/* Feedback icons */}
@@ -268,9 +271,9 @@ export const QuizView: React.FC = () => {
                 <SparklesIcon size={14} />
                 <span>Bilim Explanation</span>
               </div>
-              <p className="text-xs leading-relaxed text-muted-foreground font-medium">
-                {q.explanation}
-              </p>
+              <div className="text-xs leading-relaxed text-muted-foreground font-medium select-text w-full">
+                <MixedTextRenderer text={q.explanation} />
+              </div>
             </div>
           )}
         </div>

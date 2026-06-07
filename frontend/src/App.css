@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/merriweather";
+@import "katex/dist/katex.min.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -98,7 +99,7 @@
 }
 
 @layer base {
-  * {
+  *:not(.katex, .katex *) {
     @apply border-border outline-ring/50 transition-colors duration-250;
   }
   body {
@@ -207,9 +208,21 @@
 .math-wrapper {
   @apply max-w-full overflow-x-auto py-2 my-2 text-center select-all;
   scrollbar-width: none; /* Firefox */
+  line-height: normal !important;
 }
 .math-wrapper::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
+}
+
+/* KaTeX custom styling resets to protect alignment and formulas */
+.katex {
+  line-height: normal !important;
+  border-color: currentColor !important;
+}
+
+.inline-math-container {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 /* Hide scrollbars but keep scrolling */

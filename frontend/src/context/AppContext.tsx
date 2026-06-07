@@ -10,7 +10,8 @@ export type ScreenType =
   | 'detail' 
   | 'flashcards' 
   | 'quiz' 
-  | 'boss';
+  | 'boss'
+  | 'card-editor';
 
 interface AppContextProps {
   currentScreen: ScreenType;
