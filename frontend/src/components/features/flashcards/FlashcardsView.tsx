@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../../context/AppContext';
 import { getCardStates, updateCardDifficulty } from '../../../db/db';
 import { CardState, Flashcard } from '../../../types';
@@ -35,11 +35,24 @@ export const FlashcardsView: React.FC = () => {
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const [animateOutDirection, setAnimateOutDirection] = useState<'left' | 'right' | 'down' | null>(null);
 
+  // Touch device guards to prevent double tap/click emulations
+  const touchActiveRef = useRef(false);
+  const touchTimeoutRef = useRef<any>(null);
+
   if (!activeMaterial) return null;
 
   useEffect(() => {
     loadCards();
   }, [activeMaterial, isShuffle]);
+
+  // Cleanup touch guard timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (touchTimeoutRef.current) {
+        clearTimeout(touchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Reset drag position on card index change
   useEffect(() => {
@@ -192,20 +205,26 @@ export const FlashcardsView: React.FC = () => {
     }, 200);
   };
 
-  // Bridge event listeners to generic handlers
+  // Bridge event listeners to generic handlers with touch guard emulation bypass
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (touchActiveRef.current) return;
     handleDragStart(e.clientX, e.clientY);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (touchActiveRef.current) return;
     handleDragMove(e.clientX, e.clientY);
   };
 
   const handleMouseUp = () => {
+    if (touchActiveRef.current) return;
     handleDragEnd();
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    touchActiveRef.current = true;
+    if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
+
     if (e.touches.length > 0) {
       handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
     }
@@ -217,8 +236,14 @@ export const FlashcardsView: React.FC = () => {
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault(); // prevents emulated mouse events and double triggers
     handleDragEnd();
+
+    // Release guard briefly after mouseup delay completes
+    touchTimeoutRef.current = setTimeout(() => {
+      touchActiveRef.current = false;
+    }, 450);
   };
 
   // Compute card drag style transform
@@ -419,7 +444,7 @@ export const FlashcardsView: React.FC = () => {
                   </span>
                 </div>
                 
-                <div className="flex-1 flex items-center justify-center text-center my-4 overflow-y-auto pr-1 no-scrollbar select-text">
+                <div className="flex-1 flex items-center justify-center text-center my-4 overflow-y-auto pr-1 no-scrollbar select-none">
                   <h3 className="font-heading font-extrabold text-lg text-foreground px-2 leading-relaxed">
                     <MixedTextRenderer text={cards[currentIndex].front} />
                   </h3>
@@ -439,7 +464,7 @@ export const FlashcardsView: React.FC = () => {
                   <span className="text-emerald-500">Explanation</span>
                 </div>
                 
-                <div className="flex-1 flex flex-col justify-center my-4 overflow-y-auto pr-1 no-scrollbar text-center select-text">
+                <div className="flex-1 flex flex-col justify-center my-4 overflow-y-auto pr-1 no-scrollbar text-center select-none">
                   <MixedTextRenderer text={cards[currentIndex].back} />
                 </div>
 

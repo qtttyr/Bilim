@@ -145,6 +145,11 @@
   -webkit-transform: translateZ(0);
 }
 
+.card-inner * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
 .card-front, .card-back {
   position: absolute;
   top: 0;
